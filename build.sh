@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Status Bar をビルドして .app バンドルを生成する
+# Build ClaudeStatus.app from main.swift.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 APP="$DIR/ClaudeStatus.app"

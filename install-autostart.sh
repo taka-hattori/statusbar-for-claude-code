@@ -1,5 +1,5 @@
 #!/bin/bash
-# ClaudeStatus をログイン時自動起動に登録する (LaunchAgent)
+# Register ClaudeStatus as a LaunchAgent so it starts at login.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 BIN="$DIR/ClaudeStatus.app/Contents/MacOS/ClaudeStatus"
@@ -22,7 +22,7 @@ cat > "$PLIST" <<PL
 </plist>
 PL
 
-# 既存の手動起動 / 旧登録を停止してから再登録
+# Stop any running/registered instance, then (re)register.
 pkill -f "ClaudeStatus.app/Contents/MacOS/ClaudeStatus" 2>/dev/null || true
 launchctl bootout "gui/$UID_NUM/$LABEL" 2>/dev/null || true
 launchctl bootstrap "gui/$UID_NUM" "$PLIST"

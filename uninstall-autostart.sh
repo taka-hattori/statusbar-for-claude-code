@@ -1,5 +1,5 @@
 #!/bin/bash
-# ClaudeStatus の自動起動を解除して常駐を停止する
+# Unregister the LaunchAgent and stop ClaudeStatus.
 set -euo pipefail
 LABEL="io.github.claude-statusbar"
 UID_NUM="$(id -u)"

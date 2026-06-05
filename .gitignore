@@ -1,0 +1,12 @@
+# ビルド成果物
+ClaudeStatus.app/
+*.app/
+
+# 旧Anthropicアセット(同梱しない)
+ClaudeTrayTemplate*.png
+
+# macOS
+.DS_Store
+
+# ツール由来のスナップショット/作業ディレクトリ(リポジトリ対象外)
+.entire/

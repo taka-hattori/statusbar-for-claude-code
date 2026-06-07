@@ -1,5 +1,7 @@
 # claude-statusbar
 
+![demo](assets/demo.gif)
+
 A tiny macOS menu bar app that shows the live status of your **Claude Code
 background sessions** as a single pixel-art icon, color-coded by state.
 

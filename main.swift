@@ -1,6 +1,6 @@
 import Cocoa
 
-// Claude Status Bar: reads ~/.claude/sessions/*.json (kind == "bg") and shows
+// Statusbar for Claude Code: reads ~/.claude/sessions/*.json (kind == "bg") and shows
 // the aggregate session state as an animated menu bar icon.
 // Priority: waiting > busy > idle > none.
 
@@ -65,7 +65,7 @@ func stateFor(_ c: Counts) -> State {
 }
 
 // Dot-matrix sprites ('#' filled, '.' transparent), filled with the state color.
-// Override via CLAUDE_STATUSBAR_CHAR or ~/.config/claude-statusbar/char.txt.
+// Override via STATUSBAR_FOR_CLAUDE_CODE_CHAR or ~/.config/statusbar-for-claude-code/char.txt.
 
 let FRAME_REST: [String] = [
     "....................",
@@ -227,10 +227,10 @@ let FRAME_WAIT_B: [String] = [
 ]
 
 func loadCustomFrame() -> [String]? {
-    var path: String? = ProcessInfo.processInfo.environment["CLAUDE_STATUSBAR_CHAR"]
+    var path: String? = ProcessInfo.processInfo.environment["STATUSBAR_FOR_CLAUDE_CODE_CHAR"]
     if path == nil {
         let p = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".config/claude-statusbar/char.txt").path
+            .appendingPathComponent(".config/statusbar-for-claude-code/char.txt").path
         if FileManager.default.fileExists(atPath: p) { path = p }
     }
     if let p = path, let text = try? String(contentsOfFile: p, encoding: .utf8) {

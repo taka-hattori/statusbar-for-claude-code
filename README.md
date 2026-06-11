@@ -1,4 +1,4 @@
-# claude-statusbar
+# Statusbar for Claude Code
 
 ![demo](assets/demo.gif)
 
@@ -49,10 +49,10 @@ No third-party libraries; it links only against the system Cocoa framework.
 ## Build & run
 
 ```bash
-git clone <your-fork-url> claude-statusbar
-cd claude-statusbar
-./build.sh           # produces ClaudeStatus.app
-open ClaudeStatus.app
+git clone <your-fork-url> statusbar-for-claude-code
+cd statusbar-for-claude-code
+./build.sh           # produces StatusbarForClaudeCode.app
+open StatusbarForClaudeCode.app
 ```
 
 ## Start at login
@@ -63,15 +63,15 @@ open ClaudeStatus.app
 ```
 
 After editing the source: `./build.sh` then
-`launchctl kickstart -k gui/$(id -u)/io.github.claude-statusbar`.
+`launchctl kickstart -k gui/$(id -u)/io.github.statusbar-for-claude-code`.
 
 ## Customizing the icon
 
 The icon is a dot matrix of `#` (filled) and `.` (transparent). Override the
 built-in one without touching code by providing your own:
 
-- set `CLAUDE_STATUSBAR_CHAR=/path/to/char.txt`, **or**
-- create `~/.config/claude-statusbar/char.txt`
+- set `STATUSBAR_FOR_CLAUDE_CODE_CHAR=/path/to/char.txt`, **or**
+- create `~/.config/statusbar-for-claude-code/char.txt`
 
 `char.txt` is just rows of `#` and `.`, all the same length, e.g.:
 

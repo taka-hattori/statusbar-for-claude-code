@@ -15,8 +15,8 @@ background sessions** as a single pixel-art icon, color-coded by state.
 Priority is top-down: any `waiting` → orange; else any `busy` → green; else
 any `idle` → yellow.
 
-No text, no network, no dependencies — just the icon. Click it for a per-state
-count breakdown and a Quit option.
+No text, no network, no auth, no dependencies — just the icon. Click it for a
+per-state count breakdown and a Quit option.
 
 > ⚠️ **Unofficial.** Not affiliated with or endorsed by Anthropic. The default
 > icon resembles the Claude Code launch character; see *Customizing the icon*
@@ -35,6 +35,12 @@ Every 2.5 s the app re-reads those files (a few tiny local reads — negligible
 CPU/power), keeps `kind == "bg"` entries whose `pid` is still alive
 (`kill(pid, 0)`), tallies them by `status`, and recolors the icon. It's polling,
 not push, but a 2.5 s delay reads as real-time.
+
+That is the entire permission story: **read access to `~/.claude/sessions/` is
+all it needs**. No API key, no login, no Anthropic account — there is no server
+to authenticate against, and nothing ever leaves your machine. (Liveness is
+checked with `kill(pid, 0)`, a no-op signal that needs no privileges for your
+own processes.)
 
 > ⚠️ This relies on Claude Code's **undocumented** session-registry format. An
 > update to Claude Code could change the path or schema and break this tool.

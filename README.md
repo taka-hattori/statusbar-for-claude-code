@@ -7,13 +7,14 @@ background sessions** as a single pixel-art icon, color-coded by state.
 
 | State | Color | Meaning |
 |-------|-------|---------|
-| `waiting` | 🟠 orange | at least one session is waiting for your input |
-| `busy`    | 🟢 green  | no waiting, but a session is actively working |
-| `idle`    | 🟡 yellow | sessions exist but all are idle |
+| `waiting` | 🔴 red    | act now — a session is waiting for your input |
+| `busy`    | 🔵 blue   | all good — sessions are actively working |
+| `idle`    | 🟠 orange | sessions exist but nobody is doing anything |
 | none      | ⚪️ gray   | no background sessions |
 
-Priority is top-down: any `waiting` → orange; else any `busy` → green; else
-any `idle` → yellow.
+Priority is top-down: any `waiting` → red; else any `busy` → blue; else
+any `idle` → orange. Warm colors mean "do something", blue means "running" —
+think CI pipeline, not traffic light.
 
 No text, no network, no auth, no dependencies — just the icon. Click it for a
 per-state count breakdown and a Quit option.

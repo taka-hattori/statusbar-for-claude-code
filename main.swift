@@ -15,12 +15,11 @@ struct Counts {
 enum State {
     case waiting, busy, idle, none
 
-    // Shared hex palette with the statusline: waiting #FF453A / busy #0A84FF / idle #FF9F0A.
     var color: NSColor {
         switch self {
-        case .waiting: return NSColor(srgbRed: 255/255, green:  69/255, blue:  58/255, alpha: 1)
-        case .busy:    return NSColor(srgbRed:  10/255, green: 132/255, blue: 255/255, alpha: 1)
-        case .idle:    return NSColor(srgbRed: 255/255, green: 159/255, blue:  10/255, alpha: 1)
+        case .waiting: return NSColor.systemOrange
+        case .busy:    return NSColor.systemGreen
+        case .idle:    return NSColor.systemYellow
         case .none:    return NSColor(white: 0.75, alpha: 1.0)
         }
     }

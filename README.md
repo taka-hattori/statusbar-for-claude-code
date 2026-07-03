@@ -31,10 +31,12 @@ sessions at `~/.claude/sessions/*.json`, one JSON file per session, e.g.:
 { "kind": "bg", "status": "busy", "pid": 10755 }
 ```
 
-Every 2.5 s the app re-reads those files (a few tiny local reads — negligible
-CPU/power), keeps `kind == "bg"` entries whose `pid` is still alive
-(`kill(pid, 0)`), tallies them by `status`, and recolors the icon. It's polling,
-not push, but a 2.5 s delay reads as real-time.
+The app watches that directory with an **FSEvents stream**, so it re-reads the
+files (a few tiny local reads — negligible CPU/power) the moment Claude Code
+rewrites one: push, not polling. On each update it keeps `kind == "bg"` entries
+whose `pid` is still alive (`kill(pid, 0)`), tallies them by `status`, and
+recolors the icon. A slow 30 s sweep remains only to drop sessions whose
+process died without touching its file.
 
 That is the entire permission story: **read access to `~/.claude/sessions/` is
 all it needs**. No API key, no login, no Anthropic account — there is no server

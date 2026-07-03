@@ -1,8 +1,12 @@
 import Cocoa
+import CoreServices
 
 // Statusbar for Claude Code: reads ~/.claude/sessions/*.json (kind == "bg") and shows
 // the aggregate session state as an animated menu bar icon.
 // Priority: waiting > busy > idle > none.
+// Updates are event-driven: an FSEvents stream on the sessions directory triggers a
+// re-read the moment Claude Code rewrites a session file. A slow janitor timer remains
+// only to drop sessions whose process died without touching its file.
 
 struct Counts {
     var waiting = 0
@@ -283,24 +287,24 @@ func pixelCharIcon(frame: [String], state: State, height: CGFloat) -> NSImage {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    var dataTimer: Timer?
+    var eventStream: FSEventStreamRef?
+    var janitorTimer: Timer?
     var animTimer: Timer?
     var frameIndex = 0
     var state: State = .none
     let cellPt: CGFloat = 13.0 / 11.0   // display size per cell; keeps the body ~constant
     lazy var menu = NSMenu()
-    let infoItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
 
     func applicationDidFinishLaunching(_ n: Notification) {
-        infoItem.isEnabled = false
-        menu.addItem(infoItem)
-        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Refresh now", action: #selector(refresh), keyEquivalent: "r"))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         statusItem.menu = menu
         refresh()
-        dataTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: true) { [weak self] _ in
+        startWatching()
+        // A dead process leaves its session file untouched, so no file event fires;
+        // sweep for stale pids at a low frequency.
+        janitorTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             self?.refresh()
         }
         animTimer = Timer.scheduledTimer(withTimeInterval: 0.75, repeats: true) { [weak self] _ in
@@ -308,15 +312,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func startWatching() {
+        let dir = sessionsDir()
+        // FSEvents needs an existing path; Claude Code creates this dir anyway.
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        var context = FSEventStreamContext(
+            version: 0,
+            info: Unmanaged.passUnretained(self).toOpaque(),
+            retain: nil, release: nil, copyDescription: nil)
+        let callback: FSEventStreamCallback = { _, info, _, _, _, _ in
+            guard let info = info else { return }
+            Unmanaged<AppDelegate>.fromOpaque(info).takeUnretainedValue().refresh()
+        }
+        guard let stream = FSEventStreamCreate(
+            kCFAllocatorDefault, callback, &context,
+            [dir.path] as CFArray,
+            FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
+            0.3,   // latency: coalesces bursts of writes into one callback
+            FSEventStreamCreateFlags(kFSEventStreamCreateFlagFileEvents))
+        else { return }
+        FSEventStreamSetDispatchQueue(stream, DispatchQueue.main)
+        FSEventStreamStart(stream)
+        eventStream = stream
+    }
+
     @objc func refresh() {
         let c = readCounts()
         state = stateFor(c)
         if framesFor(state).count <= 1 { frameIndex = 0 }
         draw()
-        statusItem.button?.toolTip = "waiting:\(c.waiting)  busy:\(c.busy)  idle:\(c.idle)" +
-            (c.other > 0 ? "  other:\(c.other)" : "")
-        infoItem.title = "waiting \(c.waiting) · busy \(c.busy) · idle \(c.idle)" +
-            (c.other > 0 ? " · other \(c.other)" : "")
     }
 
     func tickAnimation() {

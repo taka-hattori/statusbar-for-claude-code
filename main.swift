@@ -3,7 +3,9 @@ import CoreServices
 
 // Statusbar for Claude Code: reads ~/.claude/sessions/*.json (kind == "bg") and shows
 // the aggregate session state as an animated menu bar icon.
-// Priority: waiting > busy > idle > none.
+// Priority: busy > waiting > idle > none.
+// "shell" / "thinking" count as busy (tool running / model thinking). Spare (pre-warmed,
+// never-used) sessions are skipped entirely.
 // Updates are event-driven: an FSEvents stream on the sessions directory triggers a
 // re-read the moment Claude Code rewrites a session file. A slow janitor timer remains
 // only to drop sessions whose process died without touching its file.
@@ -50,20 +52,21 @@ func readCounts() -> Counts {
               let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else { continue }
         guard (obj["kind"] as? String) == "bg" else { continue }
+        if (obj["spare"] as? Bool) == true { continue }   // pre-warmed, not a real job
         if let pid = obj["pid"] as? Int, !pidAlive(pid) { continue }
         switch (obj["status"] as? String) ?? "" {
-        case "waiting": c.waiting += 1
-        case "busy":    c.busy += 1
-        case "idle":    c.idle += 1
-        default:        c.other += 1
+        case "waiting":                     c.waiting += 1
+        case "busy", "shell", "thinking":   c.busy += 1
+        case "idle":                        c.idle += 1
+        default:                            c.other += 1
         }
     }
     return c
 }
 
 func stateFor(_ c: Counts) -> State {
-    if c.waiting > 0 { return .waiting }
     if c.busy > 0 { return .busy }
+    if c.waiting > 0 { return .waiting }
     if c.idle > 0 { return .idle }
     return .none
 }
